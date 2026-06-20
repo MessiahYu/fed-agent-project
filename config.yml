@@ -22,12 +22,18 @@ data_sources:
 
 # ── FRED 数据系列 ID ─────────────────────────────────────────
 fred_series:
-  cpi_yoy: "CPIAUCSL"
-  unemployment: "UNRATE"
+  cpi_yoy:       "CPIAUCSL"
+  unemployment:  "UNRATE"
   fed_funds_rate: "FEDFUNDS"
-  treasury_10y: "DGS10"
-  pce: "PCEPI"
-  gdp_growth: "A191RL1Q225SBEA"
+  treasury_10y:  "DGS10"
+  treasury_2y:   "DGS2"
+  ecb_rate:      "ECBDFR"
+  dollar_index:  "DTWEXBGS"
+  pce:           "PCEPI"
+  gdp_growth:    "A191RL1Q225SBEA"
+
+# 最近数据查询起始日期（agent5 市场信号用）
+fred_recent_start: "2026-01-01"
 
 # ── 当前 FOMC 背景 ───────────────────────────────────────────
 fomc_context:
@@ -35,7 +41,7 @@ fomc_context:
   rate_range: "4-1/4 to 4-1/2 percent"
   latest_meeting_date: "2026-06-17"
   latest_decision: "hold"
-  next_meeting_date: "2026-07-29"
+  next_meeting_date: "2026-07-28/29"
 
 # ── 评分阈值与交易信号 ───────────────────────────────────────
 scoring:
@@ -46,6 +52,30 @@ trading_signals:
   hawkish: "做空国债（利率预期上升） / 做多美元"
   dovish: "做多国债（利率预期下降） / 做空美元"
   neutral: "中性，等待下一个经济数据触发信号"
+
+# ── 回测参数 ─────────────────────────────────────────────────
+backtest:
+  threshold_bps: 0.12      # 利率变化 >±0.12% 才判定为 hike/cut
+  var_lags: 4              # VAR 最大滞后阶数
+  var_window: 72           # 滚动训练窗口（月）
+  train_split_year: 2021   # >= 此年为测试集
+
+# ── 五路信号融合权重 ─────────────────────────────────────────
+fusion_weights:
+  var:      0.35
+  llm:      0.35
+  distill:  0.15
+  market:   0.08
+  combined: 0.07
+
+# ── 置信度参数 ───────────────────────────────────────────────
+confidence:
+  var_min: 0.40
+  llm_default: 0.60
+  fusion_agree_bonus: 0.05
+  fusion_disagree_factor: 0.80
+  var_confidence_scale: 2.0
+  var_max: 0.80
 
 # ── 智能体定义（Agent 参数） ─────────────────────────────────
 agents:
@@ -130,3 +160,43 @@ task_prompts:
     key_evidence（3-5条字符串列表）、
     conclusion（100字以内的字符串）。
     不要加任何markdown标记，直接输出裸JSON。
+
+# ── 分析背景上下文（截至 2026-06-20）────────────────────────
+context:
+  political_2026: |
+    2026年美国政治背景（截至分析日）：
+      · 特朗普政府于2025-01上任，持续公开呼吁美联储降息，认为高利率不利于经济增长
+      · 特朗普曾多次在社交媒体批评鲍威尔"太慢"，但拜登时期任命的鲍威尔顶住了压力
+      · 2026-05-22 沃什接任后，特朗普表示满意（沃什是他提名的），但期待宽松政策
+      · 参议院银行委员会：共和党主席倾向去监管+支持增长；民主党关注就业保障
+      · 国会预算赤字扩大（减税+支出），存在通过财政政策代替货币宽松的可能
+      · 美联储独立性挑战：白宫法律团队2025年曾研究是否可以解雇联储主席的可能性
+
+  international_2026: |
+    2026年国际经济背景（截至分析日）：
+      · ECB（欧洲央行）：2025年已多次降息，欧洲通胀接近目标，目前处于宽松周期中
+      · 中国：经济增速放缓，通缩压力持续，人民币相对稳定但出口压力加大
+      · 中东局势：2025-2026能源供应紧张（冲突影响），是推高美国CPI至4.17%的主因
+      · 美元：偏强（受高利率和避险需求支撑），美元走强对新兴市场形成外部压力
+      · 日本：终于走出通缩，日银正常化利率，日元升值中
+      · G7/IMF：警告各国不应因政治压力偏离价格稳定目标
+      · 贸易：特朗普关税引发全球贸易摩擦，增加了通胀的不确定性
+
+  historical_cases: |
+    【历史案例参照 - 情境学习材料】
+
+    案例1（鹰派紧缩期，2022-2023）：
+      背景：CPI 高达 7-9%，就业强劲
+      决策：连续加息 525bp（0.25% → 5.25-5.5%）
+      结论：高通胀环境下，Fed 选择激进加息直至通胀明显回落
+
+    案例2（政策转向期，2024）：
+      背景：CPI 回落至 2.5-3%，就业边际走弱
+      决策：暂停加息 → 9月开始降息 50bp → 随后数次各降25bp
+      结论：通胀接近目标 + 就业走弱 → 触发降息条件
+
+    案例3（当前时点，2026年6月）：
+      背景：利率 3.5-3.75%，CPI 同比 4.17%（能源供应冲击），就业稳定
+      决策：全票维持不变（12-0）
+      关键措辞："Inflation remains elevated"，"The Committee will deliver price stability"
+      沃什立场：新主席偏鹰，强调价格稳定是核心使命

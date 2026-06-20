@@ -9,7 +9,8 @@ from crewai import Agent, Task, Crew, LLM
 
 load_dotenv()
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fed_watch.db")
+from utils.db import DB_PATH
+from utils.config import LLM_MODEL, LLM_BASE_URL
 
 
 # ── 输出数据模型 ──────────────────────────────────────────────────────────────
@@ -57,9 +58,9 @@ def run_semantic_analysis(
     macro_context  : 宏观数据字典，如 {"cpi_yoy": 4.17, "unemployment": 4.3, ...}
     """
     llm = LLM(
-        model="deepseek/deepseek-chat",
+        model=LLM_MODEL,
         api_key=os.getenv("DEEPSEEK_API_KEY"),
-        base_url="https://api.deepseek.com",
+        base_url=LLM_BASE_URL,
     )
 
     analyst = Agent(

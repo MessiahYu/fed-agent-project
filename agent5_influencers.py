@@ -28,8 +28,10 @@ from crewai import Agent, Task, Crew, LLM
 load_dotenv()
 DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY")
 FRED_KEY     = os.getenv("FRED_API_KEY")
-DB_PATH      = r"c:\Users\余青锋\OneDrive\fed-agent-project\fed_watch.db"
-NEXT_MEETING = "2026-07-28/29"
+from utils.db import DB_PATH
+from utils.config import (NEXT_FOMC as NEXT_MEETING, FRED_BASE_URL,
+                           FRED_RECENT_START, LLM_MODEL, LLM_BASE_URL,
+                           CONTEXT_POLITICAL, CONTEXT_INTERNATIONAL)
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -75,11 +77,10 @@ def _fred_latest(series_id: str) -> Optional[float]:
     if not FRED_KEY:
         return None
     try:
-        url = "https://api.stlouisfed.org/fred/series/observations"
-        r = requests.get(url, params={
+        r = requests.get(FRED_BASE_URL, params={
             "series_id": series_id, "api_key": FRED_KEY,
             "file_type": "json", "sort_order": "desc",
-            "limit": 5, "observation_start": "2026-01-01",
+            "limit": 5, "observation_start": FRED_RECENT_START,
         }, timeout=15)
         obs = [o for o in r.json().get("observations", [])
                if o["value"] not in (".", "")]
@@ -140,27 +141,10 @@ def run_market_agent() -> dict:
 # B + C. 政治压力 + 国际联动 Agent（合并为一次 LLM 调用）
 # ══════════════════════════════════════════════════════════════════════
 
-# 已知背景知识（截至 2026-06-20，硬编码避免 API 实时抓取）
-POLITICAL_CONTEXT_2026 = """
-2026年美国政治背景（截至分析日）：
-  · 特朗普政府于2025-01上任，持续公开呼吁美联储降息，认为高利率不利于经济增长
-  · 特朗普曾多次在社交媒体批评鲍威尔"太慢"，但拜登时期任命的鲍威尔顶住了压力
-  · 2026-05-22 沃什接任后，特朗普表示满意（沃什是他提名的），但期待宽松政策
-  · 参议院银行委员会：共和党主席倾向去监管+支持增长；民主党关注就业保障
-  · 国会预算赤字扩大（减税+支出），存在通过财政政策代替货币宽松的可能
-  · 美联储独立性挑战：白宫法律团队2025年曾研究是否可以解雇联储主席的可能性
-"""
-
-INTERNATIONAL_CONTEXT_2026 = """
-2026年国际经济背景（截至分析日）：
-  · ECB（欧洲央行）：2025年已多次降息，欧洲通胀接近目标，目前处于宽松周期中
-  · 中国：经济增速放缓，通缩压力持续，人民币相对稳定但出口压力加大
-  · 中东局势：2025-2026能源供应紧张（冲突影响），是推高美国CPI至4.17%的主因
-  · 美元：偏强（受高利率和避险需求支撑），美元走强对新兴市场形成外部压力
-  · 日本：终于走出通缩，日银正常化利率，日元升值中
-  · G7/IMF：警告各国不应因政治压力偏离价格稳定目标
-  · 贸易：特朗普关税引发全球贸易摩擦，增加了通胀的不确定性
-"""
+# 背景文字从 config.yml 加载，在 import 区已导入：
+# CONTEXT_POLITICAL, CONTEXT_INTERNATIONAL
+POLITICAL_CONTEXT_2026    = CONTEXT_POLITICAL
+INTERNATIONAL_CONTEXT_2026 = CONTEXT_INTERNATIONAL
 
 
 def build_political_international_prompt(macro: dict, market_data: dict) -> str:

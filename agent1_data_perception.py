@@ -11,36 +11,13 @@ from bs4 import BeautifulSoup
 
 load_dotenv()
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fed_watch.db")
-FED_BASE = "https://www.federalreserve.gov"
-FRED_BASE = "https://api.stlouisfed.org/fred/series/observations"
 FRED_KEY = os.getenv("FRED_API_KEY")
-HEADERS = {"User-Agent": "Mozilla/5.0 FedWatchAI/1.0 (academic-research)"}
-
-FALLBACK_STATEMENT_URL = f"{FED_BASE}/newsevents/pressreleases/monetary20260617a.htm"
-FALLBACK_STATEMENT_TEXT = """
-FOR RELEASE AT 2:00 P.M. EDT, JUNE 17, 2026
-
-Recent indicators suggest that economic activity has continued to expand at a solid pace.
-Labor market conditions have remained solid, with the unemployment rate remaining low.
-Inflation remains somewhat elevated, though progress toward the 2 percent goal has been uneven.
-
-The Committee seeks to achieve maximum employment and inflation at the rate of 2 percent
-over the longer run. The Committee judges that the risks to achieving its employment and
-inflation goals are roughly in balance. The economic outlook remains uncertain.
-
-In support of its goals, the Committee decided to maintain the target range for the federal
-funds rate at 4-1/4 to 4-1/2 percent. In considering the extent and timing of additional
-adjustments to the target range, the Committee will carefully assess incoming data, the
-evolving outlook, and the balance of risks.
-
-The Committee is strongly committed to returning inflation to its 2 percent objective.
-The Fed under its new leadership emphasizes the importance of price stability as the
-foundation for sustainable economic growth. While the Committee acknowledges that
-policy adjustments may become appropriate, maintaining credibility on inflation remains paramount.
-
-Voting for the monetary policy action were: Kevin Warsh, Chair, and other members of the Committee.
-"""
+from utils.db import DB_PATH
+from utils.config import (FED_BASE_URL  as FED_BASE,
+                           FRED_BASE_URL as FRED_BASE,
+                           HTTP_HEADERS  as HEADERS,
+                           FALLBACK_STMT_URL  as FALLBACK_STATEMENT_URL,
+                           FOMC_FALLBACK_TEXT as FALLBACK_STATEMENT_TEXT)
 
 
 # ── 数据模型 ──────────────────────────────────────────────────────────────────

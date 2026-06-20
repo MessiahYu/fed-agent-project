@@ -6,7 +6,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fed_watch.db")
+from utils.db import DB_PATH
 
 # ── 页面基础配置 ───────────────────────────────────────────────────────────────
 st.set_page_config(

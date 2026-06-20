@@ -33,11 +33,9 @@ except ImportError:
 from dotenv import load_dotenv
 load_dotenv()
 
-DB_PATH   = r"c:\Users\余青锋\OneDrive\fed-agent-project\fed_watch.db"
 FRED_KEY  = os.getenv("FRED_API_KEY")
-
-# 分类阈值：预测利率变化超过此值才判断为加/降
-THRESHOLD_BPS = 0.12   # 0.12% ≈ 12bp
+from utils.db import DB_PATH
+from utils.config import BACKTEST_THRESHOLD as THRESHOLD_BPS, VAR_WINDOW, VAR_LAGS, FRED_BASE_URL
 
 
 # ══════════════════════════════════════════════════════════════════════

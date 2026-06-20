@@ -14,12 +14,10 @@ from crewai import Agent, Task, Crew, LLM
 
 load_dotenv()
 
-DB_PATH   = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fed_watch.db")
-FRED_BASE = "https://api.stlouisfed.org/fred/series/observations"
 FRED_KEY  = os.getenv("FRED_API_KEY")
-
-# 下次 FOMC 日期（2026年日历：6/16-17之后是7/28-29）
-NEXT_FOMC_DATE = "2026-07-28/29"
+from utils.db import DB_PATH
+from utils.config import (FRED_BASE_URL as FRED_BASE, NEXT_FOMC as NEXT_FOMC_DATE,
+                           LLM_MODEL, LLM_BASE_URL, CONTEXT_HISTORICAL)
 
 # ── 输出数据模型 ──────────────────────────────────────────────────────────────
 
@@ -147,26 +145,8 @@ def run_var_submodule() -> dict:
 # 5步 Chain-of-Draft + 历史案例情境学习（ICL）→ 输出方向+置信度
 # ═══════════════════════════════════════════════════════════════════════
 
-# 历史案例（ICL：In-Context Learning）
-HISTORICAL_CASES = """
-【历史案例参照 - 情境学习材料】
-
-案例1（鹰派紧缩期，2022-2023）：
-  背景：CPI 高达 7-9%，就业强劲
-  决策：连续加息 525bp（0.25% → 5.25-5.5%）
-  结论：高通胀环境下，Fed 选择激进加息直至通胀明显回落
-
-案例2（政策转向期，2024）：
-  背景：CPI 回落至 2.5-3%，就业边际走弱
-  决策：暂停加息 → 9月开始降息 50bp → 随后数次各降25bp
-  结论：通胀接近目标 + 就业走弱 → 触发降息条件
-
-案例3（当前时点，2026年6月）：
-  背景：利率 3.5-3.75%，CPI 同比 4.17%（能源供应冲击），就业稳定
-  决策：全票维持不变（12-0）
-  关键措辞："Inflation remains elevated"，"The Committee will deliver price stability"
-  沃什立场：新主席偏鹰，强调价格稳定是核心使命
-"""
+# 历史案例从 config.yml 加载（在 import 区已导入 CONTEXT_HISTORICAL）
+HISTORICAL_CASES = CONTEXT_HISTORICAL
 
 
 def run_llm_submodule(semantic_feature: dict, macro_context: dict) -> dict:
@@ -175,9 +155,9 @@ def run_llm_submodule(semantic_feature: dict, macro_context: dict) -> dict:
     强制5步推理（每步≤30字），最终输出 JSON。
     """
     llm = LLM(
-        model="deepseek/deepseek-chat",
+        model=LLM_MODEL,
         api_key=os.getenv("DEEPSEEK_API_KEY"),
-        base_url="https://api.deepseek.com",
+        base_url=LLM_BASE_URL,
     )
 
     reasoning_agent = Agent(

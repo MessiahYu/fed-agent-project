@@ -20,7 +20,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 FRED_KEY = os.getenv("FRED_API_KEY")
-DB_PATH  = r"c:\Users\余青锋\OneDrive\fed-agent-project\fed_watch.db"
+from utils.db import DB_PATH
+from utils.config import FRED_BASE_URL
 
 # ══════════════════════════════════════════════════════════════════════
 # 历史 FOMC 决策表（2000-2024，共 ~170 次会议）
