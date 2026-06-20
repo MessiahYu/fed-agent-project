@@ -19,11 +19,12 @@ from pydantic import BaseModel
 from typing import Optional
 from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, LLM
+from utils.db import DB_PATH
+from utils.config import NEXT_FOMC, LLM_MODEL, LLM_BASE_URL
 
 load_dotenv()
 DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY")
-DB_PATH      = r"c:\Users\余青锋\OneDrive\fed-agent-project\fed_watch.db"
-NEXT_MEETING = "2026-07-28/29"
+NEXT_MEETING = NEXT_FOMC
 
 
 # ══════════════════════════════════════════════════════════════════════
