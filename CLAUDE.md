@@ -61,5 +61,17 @@ LLM(大脑=DeepSeek) → Agent(角色/目标/背景) → Task(带 output_pydanti
 - agent_v1.py：文本输出，hawkish_score +0.6，分析质量优秀
 - agent_v2.py：结构化输出，hawkish_score +0.40（float 类型已校验），自动交易信号"做空国债/做多美元"
 
-## 9. 当前这一步
+## 9. 编码规范（必须遵守）
+
+### 禁止硬编码原则
+- **所有可变值**（URL、模型名、阈值、数据库路径、HTTP 头、信号文字）必须放入 `config.yml`，代码只读不写。
+- **所有长文本常量**（FOMC 声明原文、智能体 role/goal/backstory、Task description 模板）也必须放入 `config.yml`，不得直接写死在 `.py` 文件里。
+- `.py` 文件里只允许出现逻辑、计算、控制流；字符串内容和参数数值全部通过 `config.yml` 注入。
+- 读取方式统一：`import yaml; cfg = yaml.safe_load(open("config.yml", encoding="utf-8"))`。
+- `.env` 继续只存密钥（`DEEPSEEK_API_KEY`、`FRED_API_KEY`）；`config.yml` 存其他一切配置，可以提交到 git。
+
+### 变量与字符串分离的理由
+这样做的好处：换模型只改 `config.yml` 一行；调阈值不用动代码；笔试答辩时能直接展示"配置与逻辑解耦"的工程设计思想。
+
+## 10. 当前这一步
 开始路线图第 2 项：数据感知智能体（自动抓取美联储声明 + FRED 宏观数据）。
