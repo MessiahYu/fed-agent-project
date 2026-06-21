@@ -1,6 +1,7 @@
 .env
 __pycache__/
 *.db
+!fed_watch.db
 .conda/
 .Rhistory
 .claude/
