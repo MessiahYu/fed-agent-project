@@ -161,6 +161,32 @@ task_prompts:
     conclusion（100字以内的字符串）。
     不要加任何markdown标记，直接输出裸JSON。
 
+# ── V2 量化政治与国际压力感知（agent5_v2_political_quant.py）──
+v2_political_quant:
+  fetch_start:    "2000-01-01"          # 历史数据起点
+  table_name:     "political_quant_monthly"
+  rolling_window: 36                    # 百分位计算的滚动窗口（月）
+  fred_series:
+    fedfunds:  "FEDFUNDS"               # 联邦基金利率
+    dgs2:      "DGS2"                   # 2Y 国债收益率
+    dgs10:     "DGS10"                  # 10Y 国债收益率
+    epu:       "USEPUINDXM"             # EPU 经济政策不确定性  Baker et al.(2016) QJE
+    vix:       "VIXCLS"                 # VIX 恐慌指数（不确定性代理） Bloom (2009) AER
+    ecb_rate:  "ECBDFR"                 # ECB 存款利率
+    boj_rate:  "IRSTCI01JPM156N"        # 日本央行利率 (OECD)
+    boe_rate:  "IRSTCI01GBM156N"        # 英国央行利率 (OECD)
+    dollar:    "TWEXMMTH"               # 美元指数（主要货币月频，2000起）
+  thresholds:
+    yield_invert:   -0.20   # 10Y-2Y < 此值 → 曲线倒挂 → cut
+    yield_steep:     1.00   # 10Y-2Y > 此值 → 曲线陡峭 → hike
+    diverge_tight:   1.50   # G10分歧度 > 此值 → 美联储相对偏紧 → cut压力
+    diverge_loose:  -1.00   # G10分歧度 < 此值 → 美联储相对偏松 → hike压力
+    political_high:  0.70   # 政治压力得分 > 此值 → 高压 → toward_cut
+    political_low:   0.30   # 政治压力得分 < 此值 → 低压 → neutral
+  weights:
+    epu_in_political: 0.60  # EPU 在政治压力得分中的权重
+    pci_in_political: 0.40  # PCI 在政治压力得分中的权重
+
 # ── 分析背景上下文（截至 2026-06-20）────────────────────────
 context:
   political_2026: |
