@@ -375,7 +375,7 @@ def compare_methods(df_all: pd.DataFrame, var_results: list):
               如果不一致 → 信任 Chair 信号（因为 Chair 知道阈值）
     """
     # 导入主席规则信号
-    from agent4_chair_distill import rule_based_chair_signal
+    from v1.agent4_chair_distill import rule_based_chair_signal
 
     df_test = df_all[df_all["split"] == "test"].reset_index(drop=True)
 

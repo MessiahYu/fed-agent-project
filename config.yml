@@ -241,3 +241,15 @@ context:
       决策：全票维持不变（12-0）
       关键措辞："Inflation remains elevated"，"The Committee will deliver price stability"
       沃什立场：新主席偏鹰，强调价格稳定是核心使命
+
+# ── V2 权重优化器输出（由 v2/weight_optimizer.py 自动生成）──────────
+v2_optimal_weights:
+  w_llm:      0.45    # LLM 语义信号
+  w_var:      0.2    # VAR 计量信号
+  w_market:   0.15    # 市场信号（收益率曲线）
+  w_pol:      0.2    # 政治压力信号
+  hike_thr:   0.25   # fusion > 此值 → HIKE
+  cut_thr:    -0.35   # fusion < 此值 → CUT
+  train_acc:  0.7861  # 训练集准确率（2000-2020）
+  val_acc:    0.6562  # 验证集准确率（2021-2024）
+  optimized_at: "2026-06-20"
