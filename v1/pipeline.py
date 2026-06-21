@@ -9,15 +9,21 @@ FedWatch AI — 完整五阶段流水线
   Agent 5  市场预期+政治压力+国际联动 → InfluencerResult
   全部结果写入 SQLite（完整数据血统链）
 
-运行方式：
-  E:\\Anaconda\\envs\\fed-agent\\python.exe pipeline.py
+运行方式（从项目根目录执行）：
+  E:\\Anaconda\\envs\\fed-agent\\python.exe v1/pipeline.py
 """
 
-from agent1_data_perception import main as run_agent1, save_to_db
-from agent2_semantic        import run_semantic_analysis, save_semantic_to_db
-from agent3_decision        import run_decision_agent
-from agent4_chair_distill   import run_chair_distill, load_chair_stats
-from agent5_influencers     import run_influencer_agents
+import sys
+from pathlib import Path
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from v1.agent1_data_perception import main as run_agent1, save_to_db
+from v1.agent2_semantic        import run_semantic_analysis, save_semantic_to_db
+from v1.agent3_decision        import run_decision_agent
+from v1.agent4_chair_distill   import run_chair_distill, load_chair_stats
+from v1.agent5_influencers     import run_influencer_agents
 
 
 def run_pipeline():

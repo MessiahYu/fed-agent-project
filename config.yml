@@ -1,202 +1,254 @@
-# ============================================================
-#  FedWatch AI — 统一配置文件
-#  规则：所有可变值与长文本常量集中在此，.py 文件只含逻辑。
-#  密钥例外：仍放 .env，本文件可安全提交到 git。
-# ============================================================
-
-# ── 大模型 ──────────────────────────────────────────────────
 llm:
-  model: "deepseek/deepseek-chat"
-  base_url: "https://api.deepseek.com"
-
-# ── 数据库 ──────────────────────────────────────────────────
+  model: deepseek/deepseek-chat
+  base_url: https://api.deepseek.com
 database:
-  filename: "fed_watch.db"
-
-# ── 数据源 ──────────────────────────────────────────────────
+  filename: fed_watch.db
 data_sources:
-  fed_base_url: "https://www.federalreserve.gov"
-  fred_base_url: "https://api.stlouisfed.org/fred/series/observations"
-  fallback_statement_url: "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617a.htm"
-  http_user_agent: "Mozilla/5.0 FedWatchAI/1.0 (academic-research)"
-
-# ── FRED 数据系列 ID ─────────────────────────────────────────
+  fed_base_url: https://www.federalreserve.gov
+  fred_base_url: https://api.stlouisfed.org/fred/series/observations
+  fallback_statement_url: https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617a.htm
+  http_user_agent: Mozilla/5.0 FedWatchAI/1.0 (academic-research)
 fred_series:
-  cpi_yoy:       "CPIAUCSL"
-  unemployment:  "UNRATE"
-  fed_funds_rate: "FEDFUNDS"
-  treasury_10y:  "DGS10"
-  treasury_2y:   "DGS2"
-  ecb_rate:      "ECBDFR"
-  dollar_index:  "DTWEXBGS"
-  pce:           "PCEPI"
-  gdp_growth:    "A191RL1Q225SBEA"
-
-# 最近数据查询起始日期（agent5 市场信号用）
-fred_recent_start: "2026-01-01"
-
-# ── 当前 FOMC 背景 ───────────────────────────────────────────
+  cpi_yoy: CPIAUCSL
+  unemployment: UNRATE
+  fed_funds_rate: FEDFUNDS
+  treasury_10y: DGS10
+  treasury_2y: DGS2
+  ecb_rate: ECBDFR
+  dollar_index: DTWEXBGS
+  pce: PCEPI
+  gdp_growth: A191RL1Q225SBEA
+fred_recent_start: '2026-01-01'
 fomc_context:
-  current_chair: "Kevin Warsh"
-  rate_range: "4-1/4 to 4-1/2 percent"
-  latest_meeting_date: "2026-06-17"
-  latest_decision: "hold"
-  next_meeting_date: "2026-07-28/29"
-
-# ── 评分阈值与交易信号 ───────────────────────────────────────
+  current_chair: Kevin Warsh
+  rate_range: 4-1/4 to 4-1/2 percent
+  latest_meeting_date: '2026-06-17'
+  latest_decision: hold
+  next_meeting_date: 2026-07-28/29
 scoring:
   hawkish_threshold: 0.3
   dovish_threshold: -0.3
-
 trading_signals:
-  hawkish: "做空国债（利率预期上升） / 做多美元"
-  dovish: "做多国债（利率预期下降） / 做空美元"
-  neutral: "中性，等待下一个经济数据触发信号"
-
-# ── 回测参数 ─────────────────────────────────────────────────
+  hawkish: 做空国债（利率预期上升） / 做多美元
+  dovish: 做多国债（利率预期下降） / 做空美元
+  neutral: 中性，等待下一个经济数据触发信号
 backtest:
-  threshold_bps: 0.12      # 利率变化 >±0.12% 才判定为 hike/cut
-  var_lags: 4              # VAR 最大滞后阶数
-  var_window: 72           # 滚动训练窗口（月）
-  train_split_year: 2021   # >= 此年为测试集
-
-# ── 五路信号融合权重 ─────────────────────────────────────────
+  threshold_bps: 0.12
+  var_lags: 4
+  var_window: 72
+  train_split_year: 2021
 fusion_weights:
-  var:      0.35
-  llm:      0.35
-  distill:  0.15
-  market:   0.08
+  var: 0.35
+  llm: 0.35
+  distill: 0.15
+  market: 0.08
   combined: 0.07
-
-# ── 置信度参数 ───────────────────────────────────────────────
 confidence:
-  var_min: 0.40
-  llm_default: 0.60
+  var_min: 0.4
+  llm_default: 0.6
   fusion_agree_bonus: 0.05
-  fusion_disagree_factor: 0.80
+  fusion_disagree_factor: 0.8
   var_confidence_scale: 2.0
-  var_max: 0.80
-
-# ── 智能体定义（Agent 参数） ─────────────────────────────────
+  var_max: 0.8
 agents:
   semantic_analyst:
-    role: "美联储政策分析师"
-    goal: "从美联储FOMC声明中精准提取货币政策情绪，给出可量化的结构化分析"
-    backstory: |
-      你是顶尖宏观对冲基金的美联储分析师，有15年解读FOMC文件的经验。
+    role: 美联储政策分析师
+    goal: 从美联储FOMC声明中精准提取货币政策情绪，给出可量化的结构化分析
+    backstory: '你是顶尖宏观对冲基金的美联储分析师，有15年解读FOMC文件的经验。
+
       你擅长识别声明中的关键词语气变化，例如"elevated"比"high"更鹰，
+
       "patient"比"careful"更鸽。你的评分被交易团队直接用于调整仓位。
 
+      '
   data_perception:
-    role: "宏观数据感知专家"
-    goal: "自动抓取美联储声明与FRED宏观经济指标，为后续智能体提供标准化数据包"
-    backstory: |
-      你是量化研究团队的数据工程师，专注于央行政策数据的实时采集与清洗。
+    role: 宏观数据感知专家
+    goal: 自动抓取美联储声明与FRED宏观经济指标，为后续智能体提供标准化数据包
+    backstory: '你是量化研究团队的数据工程师，专注于央行政策数据的实时采集与清洗。
+
       你熟悉美联储官网结构和FRED API，能快速定位最新声明并获取关键宏观指标。
 
+      '
   decision_agent:
-    role: "FOMC政策决策推演师"
-    goal: "融合语义情绪评分与宏观计量结果，预测下次FOMC会议利率决策方向"
-    backstory: |
-      你是前美联储经济学家，熟悉VAR/VECM模型和Taylor Rule框架。
+    role: FOMC政策决策推演师
+    goal: 融合语义情绪评分与宏观计量结果，预测下次FOMC会议利率决策方向
+    backstory: '你是前美联储经济学家，熟悉VAR/VECM模型和Taylor Rule框架。
+
       你能将定量计量结果与自然语言政策信号融合，给出概率化的政策预测。
 
+      '
   chair_distill:
-    role: "美联储主席行为蒸馏分析师"
-    goal: "提炼历届美联储主席的决策模式，推断沃什(Warsh)的政策脉络与行为特征"
-    backstory: |
-      你专门研究美联储主席的货币政策哲学，涵盖沃尔克、格林斯潘、伯南克、耶伦、鲍威尔及沃什。
+    role: 美联储主席行为蒸馏分析师
+    goal: 提炼历届美联储主席的决策模式，推断沃什(Warsh)的政策脉络与行为特征
+    backstory: '你专门研究美联储主席的货币政策哲学，涵盖沃尔克、格林斯潘、伯南克、耶伦、鲍威尔及沃什。
+
       你通过比较不同主席在相似宏观环境下的反应函数，推断新主席的行为模式。
 
+      '
   influencer_network:
-    role: "美联储政策影响网络分析师"
-    goal: "追踪市场预期、政治压力与国际联动对FOMC决策的外部影响"
-    backstory: |
-      你专注于美联储决策的外部影响因素：联邦基金期货隐含路径、国会压力、
+    role: 美联储政策影响网络分析师
+    goal: 追踪市场预期、政治压力与国际联动对FOMC决策的外部影响
+    backstory: '你专注于美联储决策的外部影响因素：联邦基金期货隐含路径、国会压力、
+
       G7央行协调信号、地缘政治冲击。你擅长将这些信号量化为影响系数。
 
-# ── FOMC 声明正文（回退值，优先使用实时抓取） ────────────────
-fomc_statement_fallback: |
-  FOR RELEASE AT 2:00 P.M. EDT, JUNE 17, 2026
+      '
+fomc_statement_fallback: 'FOR RELEASE AT 2:00 P.M. EDT, JUNE 17, 2026
 
-  Recent indicators suggest that economic activity has continued to expand at a solid pace.
-  Labor market conditions have remained solid, with the unemployment rate remaining low.
-  Inflation remains somewhat elevated, though progress toward the 2 percent goal has been uneven.
 
-  The Committee seeks to achieve maximum employment and inflation at the rate of 2 percent
-  over the longer run. The Committee judges that the risks to achieving its employment and
+  Recent indicators suggest that economic activity has continued to expand at a solid
+  pace.
+
+  Labor market conditions have remained solid, with the unemployment rate remaining
+  low.
+
+  Inflation remains somewhat elevated, though progress toward the 2 percent goal has
+  been uneven.
+
+
+  The Committee seeks to achieve maximum employment and inflation at the rate of 2
+  percent
+
+  over the longer run. The Committee judges that the risks to achieving its employment
+  and
+
   inflation goals are roughly in balance. The economic outlook remains uncertain.
 
-  In support of its goals, the Committee decided to maintain the target range for the federal
+
+  In support of its goals, the Committee decided to maintain the target range for
+  the federal
+
   funds rate at 4-1/4 to 4-1/2 percent. In considering the extent and timing of additional
-  adjustments to the target range, the Committee will carefully assess incoming data, the
+
+  adjustments to the target range, the Committee will carefully assess incoming data,
+  the
+
   evolving outlook, and the balance of risks.
 
+
   The Committee is strongly committed to returning inflation to its 2 percent objective.
-  The Fed under its new leadership emphasizes the importance of price stability as the
+
+  The Fed under its new leadership emphasizes the importance of price stability as
+  the
+
   foundation for sustainable economic growth. While the Committee acknowledges that
-  policy adjustments may become appropriate, maintaining credibility on inflation remains paramount.
 
-  Voting for the monetary policy action were: Kevin Warsh, Chair, and other members of the Committee.
+  policy adjustments may become appropriate, maintaining credibility on inflation
+  remains paramount.
 
-# ── Task Prompt 模板（用 {变量名} 占位） ─────────────────────
+
+  Voting for the monetary policy action were: Kevin Warsh, Chair, and other members
+  of the Committee.
+
+  '
 task_prompts:
-  semantic_analysis: |
-    请分析以下美联储FOMC声明，提取政策情绪。
+  semantic_analysis: "请分析以下美联储FOMC声明，提取政策情绪。\n\n声明原文：\n{statement}\n\n你必须且只能输出一个合法的JSON对象，格式如下（不要加任何markdown代码块标记，不要加```）：\n\
+    {{\n  \"hawkish_score\": <-1.0到1.0之间的浮点数，正=鹰派，负=鸽派>,\n  \"key_evidence\": [<证据1>,\
+    \ <证据2>, <证据3>],\n  \"conclusion\": \"<100字以内的政策走向结论>\"\n}}\n"
+  semantic_expected_output: '一个合法的JSON对象，包含三个字段：
 
-    声明原文：
-    {statement}
-
-    你必须且只能输出一个合法的JSON对象，格式如下（不要加任何markdown代码块标记，不要加```）：
-    {{
-      "hawkish_score": <-1.0到1.0之间的浮点数，正=鹰派，负=鸽派>,
-      "key_evidence": [<证据1>, <证据2>, <证据3>],
-      "conclusion": "<100字以内的政策走向结论>"
-    }}
-
-  semantic_expected_output: |
-    一个合法的JSON对象，包含三个字段：
     hawkish_score（-1.0到1.0的浮点数）、
+
     key_evidence（3-5条字符串列表）、
+
     conclusion（100字以内的字符串）。
+
     不要加任何markdown标记，直接输出裸JSON。
 
-# ── 分析背景上下文（截至 2026-06-20）────────────────────────
+    '
+v2_semantic_history:
+  table_name: semantic_history
+  batch_sleep_seconds: 3
+  min_statement_chars: 80
+  url_new: https://www.federalreserve.gov/newsevents/pressreleases/monetary{date}a.htm
+  url_new_b: https://www.federalreserve.gov/newsevents/pressreleases/monetary{date}b.htm
+  url_monetary: https://www.federalreserve.gov/boarddocs/press/monetary/{year}/{date}/
+  url_old: https://www.federalreserve.gov/boarddocs/press/general/{year}/{date}/
+v2_political_quant:
+  fetch_start: '2000-01-01'
+  table_name: political_quant_monthly
+  rolling_window: 36
+  fred_series:
+    fedfunds: FEDFUNDS
+    dgs2: DGS2
+    dgs10: DGS10
+    epu: USEPUINDXM
+    vix: VIXCLS
+    ecb_rate: ECBDFR
+    boj_rate: IRSTCI01JPM156N
+    boe_rate: IRSTCI01GBM156N
+    dollar: TWEXMMTH
+  thresholds:
+    yield_invert: -0.2
+    yield_steep: 1.0
+    diverge_tight: 1.5
+    diverge_loose: -1.0
+    political_high: 0.7
+    political_low: 0.3
+  weights:
+    epu_in_political: 0.6
+    pci_in_political: 0.4
 context:
-  political_2026: |
-    2026年美国政治背景（截至分析日）：
-      · 特朗普政府于2025-01上任，持续公开呼吁美联储降息，认为高利率不利于经济增长
-      · 特朗普曾多次在社交媒体批评鲍威尔"太慢"，但拜登时期任命的鲍威尔顶住了压力
-      · 2026-05-22 沃什接任后，特朗普表示满意（沃什是他提名的），但期待宽松政策
-      · 参议院银行委员会：共和党主席倾向去监管+支持增长；民主党关注就业保障
-      · 国会预算赤字扩大（减税+支出），存在通过财政政策代替货币宽松的可能
-      · 美联储独立性挑战：白宫法律团队2025年曾研究是否可以解雇联储主席的可能性
-
-  international_2026: |
-    2026年国际经济背景（截至分析日）：
-      · ECB（欧洲央行）：2025年已多次降息，欧洲通胀接近目标，目前处于宽松周期中
-      · 中国：经济增速放缓，通缩压力持续，人民币相对稳定但出口压力加大
-      · 中东局势：2025-2026能源供应紧张（冲突影响），是推高美国CPI至4.17%的主因
-      · 美元：偏强（受高利率和避险需求支撑），美元走强对新兴市场形成外部压力
-      · 日本：终于走出通缩，日银正常化利率，日元升值中
-      · G7/IMF：警告各国不应因政治压力偏离价格稳定目标
-      · 贸易：特朗普关税引发全球贸易摩擦，增加了通胀的不确定性
-
-  historical_cases: |
-    【历史案例参照 - 情境学习材料】
-
-    案例1（鹰派紧缩期，2022-2023）：
-      背景：CPI 高达 7-9%，就业强劲
-      决策：连续加息 525bp（0.25% → 5.25-5.5%）
-      结论：高通胀环境下，Fed 选择激进加息直至通胀明显回落
-
-    案例2（政策转向期，2024）：
-      背景：CPI 回落至 2.5-3%，就业边际走弱
-      决策：暂停加息 → 9月开始降息 50bp → 随后数次各降25bp
-      结论：通胀接近目标 + 就业走弱 → 触发降息条件
-
-    案例3（当前时点，2026年6月）：
-      背景：利率 3.5-3.75%，CPI 同比 4.17%（能源供应冲击），就业稳定
-      决策：全票维持不变（12-0）
-      关键措辞："Inflation remains elevated"，"The Committee will deliver price stability"
-      沃什立场：新主席偏鹰，强调价格稳定是核心使命
+  political_2026: "2026年美国政治背景（截至分析日）：\n  · 特朗普政府于2025-01上任，持续公开呼吁美联储降息，认为高利率不利于经济增长\n\
+    \  · 特朗普曾多次在社交媒体批评鲍威尔\"太慢\"，但拜登时期任命的鲍威尔顶住了压力\n  · 2026-05-22 沃什接任后，特朗普表示满意（沃什是他提名的），但期待宽松政策\n\
+    \  · 参议院银行委员会：共和党主席倾向去监管+支持增长；民主党关注就业保障\n  · 国会预算赤字扩大（减税+支出），存在通过财政政策代替货币宽松的可能\n\
+    \  · 美联储独立性挑战：白宫法律团队2025年曾研究是否可以解雇联储主席的可能性\n"
+  international_2026: "2026年国际经济背景（截至分析日）：\n  · ECB（欧洲央行）：2025年已多次降息，欧洲通胀接近目标，目前处于宽松周期中\n\
+    \  · 中国：经济增速放缓，通缩压力持续，人民币相对稳定但出口压力加大\n  · 中东局势：2025-2026能源供应紧张（冲突影响），是推高美国CPI至4.17%的主因\n\
+    \  · 美元：偏强（受高利率和避险需求支撑），美元走强对新兴市场形成外部压力\n  · 日本：终于走出通缩，日银正常化利率，日元升值中\n  · G7/IMF：警告各国不应因政治压力偏离价格稳定目标\n\
+    \  · 贸易：特朗普关税引发全球贸易摩擦，增加了通胀的不确定性\n"
+  historical_cases: "【历史案例参照 - 情境学习材料】\n\n案例1（鹰派紧缩期，2022-2023）：\n  背景：CPI 高达 7-9%，就业强劲\n\
+    \  决策：连续加息 525bp（0.25% → 5.25-5.5%）\n  结论：高通胀环境下，Fed 选择激进加息直至通胀明显回落\n\n案例2（政策转向期，2024）：\n\
+    \  背景：CPI 回落至 2.5-3%，就业边际走弱\n  决策：暂停加息 → 9月开始降息 50bp → 随后数次各降25bp\n  结论：通胀接近目标\
+    \ + 就业走弱 → 触发降息条件\n\n案例3（当前时点，2026年6月）：\n  背景：利率 3.5-3.75%，CPI 同比 4.17%（能源供应冲击），就业稳定\n\
+    \  决策：全票维持不变（12-0）\n  关键措辞：\"Inflation remains elevated\"，\"The Committee will\
+    \ deliver price stability\"\n  沃什立场：新主席偏鹰，强调价格稳定是核心使命\n"
+v2_optimal_weights:
+  w_llm: 0.45
+  w_var: 0.2
+  w_market: 0.15
+  w_pol: 0.2
+  hike_thr: 0.25
+  cut_thr: -0.35
+  train_acc: 0.7861
+  val_acc: 0.6562
+  optimized_at: '2026-06-20'
+v3_optimal_weights:
+  w_llm: 0.35
+  w_var: 0.35
+  w_market: 0.1
+  w_pol: 0.2
+  hike_thr: 0.2
+  cut_thr: -0.35
+  train_acc: 0.7866
+  val_acc: 0.6585
+  val_baseline: 0.6585
+  split_method: stratified_random_8020
+  seed: 42
+  optimized_at: '2026-06-20'
+v4_optimal_weights:
+  w_llm: 0.45
+  w_var: 0.3
+  w_market: 0.15
+  w_pol: 0.1
+  hike_thr: 0.35
+  cut_thr: -0.35
+  train_acc: 0.7734
+  val_acc: 0.875
+  split_method: time_cut_v2_llm_lag1
+  llm_lag: 1
+  optimized_at: '2026-06-21'
+v5_optimal_weights:
+  w_llm: 0.4
+  w_var: 0.35
+  w_market: 0.1
+  w_pol: 0.15
+  hike_thr: 0.35
+  cut_thr: -0.4
+  train_acc: 0.8272
+  val_acc: 0.6667
+  val_baseline: 0.6429
+  split_method: stratified_random_8020_llm_lag1
+  llm_lag: 1
+  seed: 42
+  optimized_at: '2026-06-21'

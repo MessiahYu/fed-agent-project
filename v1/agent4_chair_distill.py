@@ -19,6 +19,13 @@ from pydantic import BaseModel
 from typing import Optional
 from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, LLM
+
+from pathlib import Path as _Path
+import sys as _sys
+_ROOT = _Path(__file__).resolve().parent.parent
+if str(_ROOT) not in _sys.path:
+    _sys.path.insert(0, str(_ROOT))
+
 from utils.db import DB_PATH
 from utils.config import NEXT_FOMC, LLM_MODEL, LLM_BASE_URL
 

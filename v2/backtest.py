@@ -34,6 +34,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 FRED_KEY  = os.getenv("FRED_API_KEY")
+
+from pathlib import Path as _Path
+import sys as _sys
+_ROOT = _Path(__file__).resolve().parent.parent
+if str(_ROOT) not in _sys.path:
+    _sys.path.insert(0, str(_ROOT))
+
 from utils.db import DB_PATH
 from utils.config import BACKTEST_THRESHOLD as THRESHOLD_BPS, VAR_WINDOW, VAR_LAGS, FRED_BASE_URL
 
@@ -368,7 +375,7 @@ def compare_methods(df_all: pd.DataFrame, var_results: list):
               如果不一致 → 信任 Chair 信号（因为 Chair 知道阈值）
     """
     # 导入主席规则信号
-    from agent4_chair_distill import rule_based_chair_signal
+    from v1.agent4_chair_distill import rule_based_chair_signal
 
     df_test = df_all[df_all["split"] == "test"].reset_index(drop=True)
 

@@ -1,10 +1,16 @@
 import json
 import os
+import sys
 import sqlite3
+from pathlib import Path
 
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 
 from utils.db import DB_PATH
 
