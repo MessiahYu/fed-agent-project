@@ -227,14 +227,28 @@ v3_optimal_weights:
   seed: 42
   optimized_at: '2026-06-20'
 v4_optimal_weights:
-  w_llm:        0.45
-  w_var:        0.30
-  w_market:     0.15
-  w_pol:        0.10
-  hike_thr:     0.35
-  cut_thr:      -0.35
-  train_acc:    0.7734   # 训练集（172次，2000-2020）
-  val_acc:      0.875    # 测试集（32次，2021-2024）←大幅超越V2的65.6%
+  w_llm: 0.45
+  w_var: 0.3
+  w_market: 0.15
+  w_pol: 0.1
+  hike_thr: 0.35
+  cut_thr: -0.35
+  train_acc: 0.7734
+  val_acc: 0.875
   split_method: time_cut_v2_llm_lag1
-  llm_lag:      1        # LLM信号滞后一期：用上次声明预测本次决策
+  llm_lag: 1
+  optimized_at: '2026-06-21'
+v5_optimal_weights:
+  w_llm: 0.4
+  w_var: 0.35
+  w_market: 0.1
+  w_pol: 0.15
+  hike_thr: 0.35
+  cut_thr: -0.4
+  train_acc: 0.8272
+  val_acc: 0.6667
+  val_baseline: 0.6429
+  split_method: stratified_random_8020_llm_lag1
+  llm_lag: 1
+  seed: 42
   optimized_at: '2026-06-21'
