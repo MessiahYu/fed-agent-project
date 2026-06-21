@@ -161,6 +161,15 @@ task_prompts:
     conclusion（100字以内的字符串）。
     不要加任何markdown标记，直接输出裸JSON。
 
+# ── V2 历史语义特征库（agent2_v2_semantic_history.py）──────────
+v2_semantic_history:
+  table_name:          "semantic_history"
+  batch_sleep_seconds: 3          # 两次 LLM 调用之间的间隔，避免触发限速
+  min_statement_chars: 80         # 声明文本低于此字符数则跳过（页面抓取失败）
+  # 美联储 2011 年前后重构了网站，两种 URL 格式均需支持
+  url_new: "https://www.federalreserve.gov/newsevents/pressreleases/monetary{date}a.htm"
+  url_old: "https://www.federalreserve.gov/boarddocs/press/general/{year}/{date}/"
+
 # ── V2 量化政治与国际压力感知（agent5_v2_political_quant.py）──
 v2_political_quant:
   fetch_start:    "2000-01-01"          # 历史数据起点
