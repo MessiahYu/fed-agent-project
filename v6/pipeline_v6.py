@@ -61,9 +61,16 @@ def _macro_snap(df_macro: pd.DataFrame, meeting_date) -> dict:
 
 
 def _parse_direction(text: str) -> str:
-    """从 Agent 输出中提取预测方向（HIKE / HOLD / CUT）"""
+    """从裁决 Agent 输出中提取最终预测方向（HIKE / HOLD / CUT）。
+    优先匹配"最终预测:"行，避免分析过程中提及对立方向时误触发。
+    """
+    import re
+    m = re.search(r'最终预测[：:]\s*(HIKE|HOLD|CUT)', text, re.IGNORECASE)
+    if m:
+        return m.group(1).upper()
+    # 兜底：全文扫描（顺序 HOLD 优先，降低误判）
     text_upper = text.upper()
-    for kw in ("HIKE", "CUT", "HOLD"):
+    for kw in ("HOLD", "CUT", "HIKE"):
         if kw in text_upper:
             return kw
     return "HOLD"
