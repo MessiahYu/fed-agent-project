@@ -28,13 +28,15 @@ V2 版本 Agent 5 —— 量化政治与国际压力感知
   4. 将完整月度数据存入 SQLite（表：political_quant_monthly）
   5. 提供 get_latest_signals() 接口供 V2 pipeline 调用
 
-运行方式：
-  E:\\Anaconda\\envs\\fed-agent\\python.exe agent5_v2_political_quant.py
+运行方式（从项目根目录执行）：
+  E:\\Anaconda\\envs\\fed-agent\\python.exe v2/agent5_v2_political_quant.py
 """
 
 import os
+import sys
 import sqlite3
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 import requests
@@ -43,8 +45,12 @@ from dotenv import load_dotenv
 load_dotenv()
 FRED_KEY = os.getenv("FRED_API_KEY")
 
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
 import yaml
-_cfg     = yaml.safe_load(open("config.yml", encoding="utf-8"))
+_cfg     = yaml.safe_load(open(str(_ROOT / "config.yml"), encoding="utf-8"))
 _pq      = _cfg["v2_political_quant"]
 
 from utils.db import DB_PATH

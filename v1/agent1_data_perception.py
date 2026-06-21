@@ -12,6 +12,14 @@ from bs4 import BeautifulSoup
 load_dotenv()
 
 FRED_KEY = os.getenv("FRED_API_KEY")
+
+# 确保项目根目录在 sys.path，使 utils/ 包可被寻址
+from pathlib import Path as _Path
+import sys as _sys
+_ROOT = _Path(__file__).resolve().parent.parent
+if str(_ROOT) not in _sys.path:
+    _sys.path.insert(0, str(_ROOT))
+
 from utils.db import DB_PATH
 from utils.config import (FED_BASE_URL  as FED_BASE,
                            FRED_BASE_URL as FRED_BASE,

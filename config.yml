@@ -166,9 +166,15 @@ v2_semantic_history:
   table_name:          "semantic_history"
   batch_sleep_seconds: 3          # 两次 LLM 调用之间的间隔，避免触发限速
   min_statement_chars: 80         # 声明文本低于此字符数则跳过（页面抓取失败）
-  # 美联储 2011 年前后重构了网站，两种 URL 格式均需支持
-  url_new: "https://www.federalreserve.gov/newsevents/pressreleases/monetary{date}a.htm"
-  url_old: "https://www.federalreserve.gov/boarddocs/press/general/{year}/{date}/"
+  # 美联储网站历经两次重构，需支持四种 URL 格式
+  # 2011+ 主声明：/newsevents/pressreleases/monetary{YYYYMMDD}a.htm
+  # 2011+ 紧急行动：/newsevents/pressreleases/monetary{YYYYMMDD}b.htm（紧急降息等同日第二份）
+  # 2002-2010：/boarddocs/press/monetary/{YYYY}/{YYYYMMDD}/  ← 货币政策专用子目录
+  # 2000-2001：/boarddocs/press/general/{YYYY}/{YYYYMMDD}/   ← 格林斯潘早期
+  url_new:      "https://www.federalreserve.gov/newsevents/pressreleases/monetary{date}a.htm"
+  url_new_b:    "https://www.federalreserve.gov/newsevents/pressreleases/monetary{date}b.htm"
+  url_monetary: "https://www.federalreserve.gov/boarddocs/press/monetary/{year}/{date}/"
+  url_old:      "https://www.federalreserve.gov/boarddocs/press/general/{year}/{date}/"
 
 # ── V2 量化政治与国际压力感知（agent5_v2_political_quant.py）──
 v2_political_quant:

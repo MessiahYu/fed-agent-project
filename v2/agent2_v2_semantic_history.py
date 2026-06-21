@@ -17,12 +17,13 @@ V2 版本 Agent 2 —— 历史语义特征库构建器
   get_semantic_for_meeting(meeting_date)  → dict
   get_semantic_history_df()              → pd.DataFrame（用于训练集特征矩阵）
 
-运行方式：
-  E:\\Anaconda\\envs\\fed-agent\\python.exe agent2_v2_semantic_history.py
+运行方式（从项目根目录执行）：
+  E:\\Anaconda\\envs\\fed-agent\\python.exe v2/agent2_v2_semantic_history.py
 """
 
 import os, re, json, sqlite3, time
 from datetime import datetime
+from pathlib import Path
 
 import requests
 import pandas as pd
@@ -32,20 +33,28 @@ from crewai import Agent, Task, Crew, LLM
 
 load_dotenv()
 
+# 确保项目根目录在 sys.path，使 utils/ 和 v1/ 包可被寻址
+import sys as _sys
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in _sys.path:
+    _sys.path.insert(0, str(_ROOT))
+
 import yaml
-_cfg  = yaml.safe_load(open("config.yml", encoding="utf-8"))
+_cfg  = yaml.safe_load(open(str(_ROOT / "config.yml"), encoding="utf-8"))
 _sh   = _cfg["v2_semantic_history"]
 
 from utils.db import DB_PATH
 from utils.config import LLM_MODEL, LLM_BASE_URL, HTTP_HEADERS
-from agent2_semantic import SemanticFeature   # 复用 V1 的 Pydantic 模型，无需重定义
+from v1.agent2_semantic import SemanticFeature   # 复用 V1 的 Pydantic 模型，无需重定义
 
 # ── 从 config.yml 读取参数 ────────────────────────────────────────────
 HIST_TABLE   = _sh["table_name"]
 SLEEP_SEC    = _sh["batch_sleep_seconds"]
 MIN_CHARS    = _sh["min_statement_chars"]
-URL_NEW      = _sh["url_new"]   # 2011 年后：/newsevents/pressreleases/monetary{date}a.htm
-URL_OLD      = _sh["url_old"]   # 2011 年前：/boarddocs/press/general/{year}/{date}/
+URL_NEW      = _sh["url_new"]       # 2011+：/newsevents/pressreleases/monetary{date}a.htm
+URL_NEW_B    = _sh["url_new_b"]     # 2011+ 紧急行动 b 后缀（如 2008-01-22 紧急降息）
+URL_MONETARY = _sh["url_monetary"]  # 2002-2010：/boarddocs/press/monetary/{year}/{date}/
+URL_OLD      = _sh["url_old"]       # 2000-2001：/boarddocs/press/general/{year}/{date}/
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -83,14 +92,18 @@ def init_table():
 
 def _candidate_urls(meeting_date: str) -> list[str]:
     """
-    生成两个候选 URL（新版优先，旧版备用）：
-      新版（2011+）：/newsevents/pressreleases/monetary{YYYYMMDD}a.htm
-      旧版（2000-2010）：/boarddocs/press/general/{YYYY}/{YYYYMMDD}/
+    生成四个候选 URL（按优先级排列）：
+      1. 新版 a 后缀（2011+常规）：/newsevents/pressreleases/monetary{YYYYMMDD}a.htm
+      2. 新版 b 后缀（紧急行动）：/newsevents/pressreleases/monetary{YYYYMMDD}b.htm
+      3. monetary 子目录（2002-2010）：/boarddocs/press/monetary/{YYYY}/{YYYYMMDD}/
+      4. general 子目录（2000-2001）：/boarddocs/press/general/{YYYY}/{YYYYMMDD}/
     """
     date_compact = meeting_date.replace("-", "")
     year = meeting_date[:4]
     return [
         URL_NEW.format(date=date_compact),
+        URL_NEW_B.format(date=date_compact),
+        URL_MONETARY.format(year=year, date=date_compact),
         URL_OLD.format(year=year, date=date_compact),
     ]
 
