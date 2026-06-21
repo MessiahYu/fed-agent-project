@@ -242,14 +242,29 @@ context:
       关键措辞："Inflation remains elevated"，"The Committee will deliver price stability"
       沃什立场：新主席偏鹰，强调价格稳定是核心使命
 
-# ── V2 权重优化器输出（由 v2/weight_optimizer.py 自动生成）──────────
+# ── V2 权重（时间切割划分，train=2000-2020, test=2021-2024）────────
 v2_optimal_weights:
-  w_llm:      0.45    # LLM 语义信号
-  w_var:      0.2    # VAR 计量信号
-  w_market:   0.15    # 市场信号（收益率曲线）
-  w_pol:      0.2    # 政治压力信号
-  hike_thr:   0.25   # fusion > 此值 → HIKE
+  w_llm:      0.45
+  w_var:      0.20
+  w_market:   0.15
+  w_pol:      0.20
+  hike_thr:   0.25
+  cut_thr:    -0.35
+  train_acc:  0.7861   # 训练集 173次
+  val_acc:    0.6562   # 验证集 32次
+  optimized_at: "2026-06-20"
+
+# ── V3 权重（分层随机 80/20 划分，seed=42）───────────────────────────
+v3_optimal_weights:
+  w_llm:      0.35    # LLM 语义信号（V2→V3 降低：随机划分暴露更多周期，VAR信号作用提升）
+  w_var:      0.35    # VAR 计量信号（V2→V3 显著提升：从0.20升至0.35）
+  w_market:   0.10    # 市场信号（收益率曲线）
+  w_pol:      0.20    # 政治压力信号
+  hike_thr:   0.20    # fusion > 此值 → HIKE（V2→V3 降低：更积极判断加息）
   cut_thr:    -0.35   # fusion < 此值 → CUT
-  train_acc:  0.7861  # 训练集准确率（2000-2020）
-  val_acc:    0.6562  # 验证集准确率（2021-2024）
+  train_acc:  0.7866  # 训练集 165次（跨2000-2024随机抽80%）
+  val_acc:    0.6585  # 验证集 41次（跨2000-2024随机抽20%）
+  val_baseline: 0.6585  # 永远预测HOLD基线（说明见文档）
+  split_method: "stratified_random_8020"
+  seed:       42
   optimized_at: "2026-06-20"
