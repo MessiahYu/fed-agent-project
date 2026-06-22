@@ -22,7 +22,7 @@
 ## 二、六个版本一句话总结
 
 | 版本 | 一句话 | 最终测试集准确率 |
-|-----------------|------------------|-------------------------------------|
+|----|----|----|
 | V1 | CrewAI 5智能体实时单次预测（含主席蒸馏、影响网络分析） | 无批量统计 |
 | V2 | 引入历史批量回测 + 网格搜索权重优化 | 75%（9/12） |
 | V3 | 修复时间固定效应（分层随机 80/20 划分） | 75%（9/12） |
@@ -91,8 +91,8 @@ fed-agent-project/
 │   └── app.py                    # Streamlit 可视化仪表盘（废弃）
 │
 └── docs/                         # 项目文档
-    ├── 用户使用手册.md             # 本文件
-    ├── 项目总说明文档.md           # 项目总览（含五代迭代树状图）
+    ├── 余青锋_FED_用户使用手册.md  # 本文件
+    ├── 余青锋_FED_项目总说明文档.md # 项目总览（含六代迭代树状图）
     ├── v1_system_doc.md           # V1 系统文档
     ├── v2_system_doc.md           # V2 系统文档
     ├── v3_system_doc.md           # V3 系统文档
@@ -107,7 +107,7 @@ fed-agent-project/
 `fed_watch.db` 已预填充，克隆仓库后无需重建。
 
 | 表名 | 记录数 | 关键字段 | 用途 |
-|------------------|------------------|------------------|------------------|
+|----|----|----|----|
 | `fomc_history` | 218 条 | `meeting_date`, `chair`, `actual_decision`, `split`, `cpi_yoy`, `unemployment`, `fed_funds_rate` | 历史会议基本信息 + 决策标签 |
 | `semantic_history` | 217 条 | `meeting_date`, `hawkish_score`, `inflation_concern`, `growth_concern` | LLM 对每次声明的情绪打分 |
 | `political_quant_monthly` | 320 条（月频） | `month`, `epu`, `vix`, `dgs2`, `dgs10`, `political_score`, `market_signal` | 政治压力 + 市场信号（月频） |
@@ -119,11 +119,11 @@ fed-agent-project/
 ### 5.1 前置要求
 
 | 要求 | 说明 |
-|------------------------------------|------------------------------------|
+|----|----|
 | Anaconda / Miniconda | 推荐 Anaconda |
 | Python 3.11 | 项目在 3.11.15 上开发 |
 | FRED API Key | 免费申请：<https://fred.stlouisfed.org/docs/api/api_key.html> |
-| DeepSeek API Key | 仅运行 V1 和重建语义数据库时需要（已预填充可跳过） |
+| DeepSeek API Key | 运行 V1、V6，或从零重建语义数据库时需要（已预填充且只跑 V2-V5 可跳过） |
 
 ### 5.2 创建 conda 环境
 
@@ -145,7 +145,7 @@ DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
 FRED_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-> **最低配置**：只运行最终测试集评估（V2-V5），`FRED_API_KEY` 可选——没有时系统自动降级为使用数据库内预存的历史宏观数据，结果略有差异但仍可运行。`DEEPSEEK_API_KEY` 仅在运行 V1 或从零重建语义数据库时需要。
+> **最低配置**：只运行最终测试集评估（V2-V5），`FRED_API_KEY` 可选——没有时系统自动降级为使用数据库内预存的历史宏观数据，结果略有差异但仍可运行。`DEEPSEEK_API_KEY` 在运行 V1、V6，或从零重建语义数据库时需要；只跑 V2-V5 可不填。
 
 ------------------------------------------------------------------------
 
@@ -389,6 +389,10 @@ python v2/final_test_eval.py
 python v3/final_test_eval_v3.py
 python v4/final_test_eval_v4.py
 python v5/final_test_eval_v5.py
+
+# 9. V6 多智能体推理（需要 DEEPSEEK_API_KEY）
+python v6/pipeline_v6.py          # 仅最近一次（约 30-60 秒）
+python v6/pipeline_v6.py --all    # 全部 12 次（约 5-10 分钟）
 ```
 
 ------------------------------------------------------------------------
@@ -436,7 +440,7 @@ v5_optimal_weights:
 运行完成后，各版本的关键输出文件：
 
 | 文件 | 内容 |
-|------------------------------------|------------------------------------|
+|----|----|
 | `v3/v3_final_test_predictions.csv` | V2/V3 在 12 次最终测试集的逐次预测 |
 | `v4/v4_final_test_predictions.csv` | V4 在 12 次最终测试集的逐次预测（含 V2 权重对比） |
 | `v5/v5_final_test_predictions.csv` | V5 在 12 次最终测试集的逐次预测（含 V4 对比） |
